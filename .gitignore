@@ -49,7 +49,10 @@ ExportedObj/
 *.mdb.meta
 
 # LeapMotion Samples
-**/Samples
+Samples/
+Samples.meta
+Assets/XR/
+Assets/XR.meta
 
 # Unity3D generated file on crash reports
 sysinfo.txt
