@@ -34,7 +34,7 @@ public class MeshGenerator : MonoBehaviour
             {
                 for (var k = 0; k < sizeZ; k++)
                 {
-                    if((i==0 || i==sizeX-1) || (j==0 || j==sizeY-1) || (k==0 || k == sizeZ - 1))
+                    if ((i == 0 || i == sizeX - 1) || (j == 0 || j == sizeY - 1) || (k == 0 || k == sizeZ - 1))
                     {
                         vertices[i + sizeX * (j + sizeY * k)] = new Vector3(i * spacing, j * spacing, k * spacing);
 
@@ -56,11 +56,11 @@ public class MeshGenerator : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if(vertices == null)
+        if (vertices == null)
         {
             return;
         }
-        for(int i =0 ; i < vertices.Length; i++)
+        for (int i = 0; i < vertices.Length; i++)
         {
             Gizmos.DrawSphere(vertices[i], 0.1f);
         }
