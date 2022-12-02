@@ -4,7 +4,18 @@ uniform float _WireSmoothness = 3;
 uniform float4 _WireColor = float4(0.0, 1.0, 0.0, 1.0);
 uniform float4 _BaseColor = float4(0.0, 0.0, 0.0, 0.0);
 uniform float _MaxTriSize = 25.0;
-uniform float3 _posTarget = float3(0.0, 0.0, 0.0);
+
+uniform float3 _posLindex = float3(0.0, 0.0, 0.0);
+uniform float3 _posLmiddle = float3(0.0, 0.0, 0.0);
+uniform float3 _posLpinky = float3(0.0, 0.0, 0.0);
+uniform float3 _posLring = float3(0.0, 0.0, 0.0);
+uniform float3 _posLthumb = float3(0.0, 0.0, 0.0);
+
+uniform float3 _posRindex = float3(0.0, 0.0, 0.0);
+uniform float3 _posRmiddle = float3(0.0, 0.0, 0.0);
+uniform float3 _posRpinky = float3(0.0, 0.0, 0.0);
+uniform float3 _posRring = float3(0.0, 0.0, 0.0);
+uniform float3 _posRthumb = float3(0.0, 0.0, 0.0);
 
 struct appdata
 {
@@ -93,10 +104,23 @@ fixed4 frag(g2f i) : SV_Target
 {
     float minDistanceToEdge = min(i.dist[0], min(i.dist[1], i.dist[2])) * i.dist[3];
 
-	float distToTarget = length(_posTarget - i.worldSpacePosition);
-	fixed4 finalColor;
+    float distToTarget0 = length(_posLindex - i.worldSpacePosition);
+    float distToTarget1 = length(_posLmiddle - i.worldSpacePosition);
+    float distToTarget2 = length(_posLpinky - i.worldSpacePosition);
+    float distToTarget3 = length(_posLring - i.worldSpacePosition);
+    float distToTarget4 = length(_posLthumb - i.worldSpacePosition);
+    float distToTarget5 = length(_posRindex - i.worldSpacePosition);
+    float distToTarget6 = length(_posRmiddle - i.worldSpacePosition);
+    float distToTarget7 = length(_posRpinky - i.worldSpacePosition);
+    float distToTarget8 = length(_posRring - i.worldSpacePosition);
+    float distToTarget9 = length(_posRthumb - i.worldSpacePosition);
+
+    float range = 0.05f;
+    bool finalDist = distToTarget0 < range || distToTarget1 < range || distToTarget2 < range || distToTarget3 < range || distToTarget4 < range || distToTarget5 < range || distToTarget6 < range || distToTarget7 < range || distToTarget8 < range || distToTarget9 < range;
 	
-	if(distToTarget < 0.1 ){
+    fixed4 finalColor;
+
+	if(finalDist){
 		
 		// Early out if we know we are not on a line segment.
 		if(minDistanceToEdge > 0.9 || i.area.x > _MaxTriSize)

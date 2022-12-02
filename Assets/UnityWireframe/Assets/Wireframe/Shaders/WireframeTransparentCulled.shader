@@ -7,7 +7,18 @@ Shader "SuperSystems/Wireframe-Transparent-Culled"
 		_WireColor ("Wire Color", Color) = (0.0, 1.0, 0.0, 1.0)
 		_BaseColor ("Base Color", Color) = (0.0, 0.0, 0.0, 0.0)
 		_MaxTriSize ("Max Tri Size", RANGE(0, 200)) = 25
-		_posTarget ("Target Position", Vector) = (0.0, 0.0, 0.0)
+
+		_posLindex("Lindex Position", Vector) = (0.0, 0.0, 0.0)
+		_posLmiddle("Lmiddle Position", Vector) = (0.0, 0.0, 0.0)
+		_posLpinky("Lpinky Position", Vector) = (0.0, 0.0, 0.0)
+		_posLring("Lring Position", Vector) = (0.0, 0.0, 0.0)
+		_posLthumb("Lthumb Position", Vector) = (0.0, 0.0, 0.0)
+
+		_posRindex("Rindex Position", Vector) = (0.0, 0.0, 0.0)
+		_posRmiddle("Rmiddle Position", Vector) = (0.0, 0.0, 0.0)
+		_posRpinky("Rpinky Position", Vector) = (0.0, 0.0, 0.0)
+		_posRring("Rring Position", Vector) = (0.0, 0.0, 0.0)
+		_posRthumb("Rthumb Position", Vector) = (0.0, 0.0, 0.0)
 	}
 
 	SubShader
