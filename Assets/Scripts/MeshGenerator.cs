@@ -3,66 +3,61 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter))]
 public class MeshGenerator : MonoBehaviour
 {
-    Mesh mesh;
+    public HandManager handManager;
 
-    Vector3[] vertices;
-    int[] triangles;
+    // List created obj + add component (physic / shader)
+    private GameObject[] listObj;
 
-    public int sizeX = 10;
-    public int sizeY = 10;
-    public int sizeZ = 10;
-    public float spacing = 0.5f;
+    private Vector3 tmp_pos;
+    private Vector3 tmp_scale;
+    private Vector3 tmp_rotate;
 
-    // Start is called before the first frame update
-    void Start()
+    private float PINCH_DISTANCE_LOW  = 0.03f;
+    private float PINCH_DISTANCE_HIGH = 0.05f;
+
+    // private float SCALE_PCT = 1.0f;
+
+    private bool isPinching = false;
+
+    void Update()
     {
-        mesh = new Mesh();
-        GetComponent<MeshFilter>().mesh = mesh;
+        Vector3 rightIndex = handManager.R_index_end.transform.position;
+        Vector3 leftIndex = handManager.L_index_end.transform.position;
 
-        CreateShape();
-        UpdateMesh();
-    }
+        Vector3 rightThumb = handManager.R_thumb_end.transform.position;
+        Vector3 leftThumb = handManager.L_thumb_end.transform.position;
 
-    void CreateShape()
-    {
-        vertices = new Vector3[sizeX * sizeY * sizeZ];
+        Vector3 leftPinchPos  = (leftIndex  + leftThumb) / 2;
+        Vector3 rightPinchPos = (rightIndex + rightThumb) / 2;
 
+        float rightDiff = (rightIndex-rightThumb).magnitude;
+        float leftDiff = (leftIndex-leftThumb).magnitude;
 
-        for (var i = 0; i < sizeX; i++)
+        if (!isPinching && leftDiff < PINCH_DISTANCE_LOW && rightDiff < PINCH_DISTANCE_LOW)
         {
-            for (var j = 0; j < sizeY; j++)
-            {
-                for (var k = 0; k < sizeZ; k++)
-                {
-                    if ((i == 0 || i == sizeX - 1) || (j == 0 || j == sizeY - 1) || (k == 0 || k == sizeZ - 1))
-                    {
-                        vertices[i + sizeX * (j + sizeY * k)] = new Vector3(i * spacing, j * spacing, k * spacing);
-
-                    }
-                }
-            }
+            Debug.Log("START");            
+            isPinching = true;
         }
-    }
 
-    void UpdateMesh()
-    {
-        mesh.Clear();
-
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-
-        mesh.RecalculateNormals();
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (vertices == null)
-        {
-            return;
+        if(isPinching){
+            // Faire une anim du précube
         }
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            Gizmos.DrawSphere(vertices[i], 0.1f);
+        
+        if(isPinching && leftDiff >= PINCH_DISTANCE_HIGH && rightDiff >= PINCH_DISTANCE_HIGH){
+            Debug.Log("END");
+            isPinching = false;
+
+            float size = (leftPinchPos - rightPinchPos).magnitude;
+
+            tmp_scale = new Vector3(size,size,size);
+            tmp_pos = (leftPinchPos + rightPinchPos)/2;
+
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.position = tmp_pos;
+            cube.transform.localScale = tmp_scale;
+            cube.transform.forward = leftPinchPos - rightPinchPos;
+            Debug.Log("position : " + tmp_pos);
+            Debug.Log("localScale : " + tmp_scale);
         }
     }
 }
