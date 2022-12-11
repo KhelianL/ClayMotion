@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SendHandsToShader : MonoBehaviour
 {
     public HandManager handManager;
-	Renderer m_ObjectRenderer;
+	private Renderer m_ObjectRenderer;
 
     // Start is called before the first frame update
     void Start()

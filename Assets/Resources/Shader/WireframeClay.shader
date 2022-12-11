@@ -1,4 +1,4 @@
-Shader "SuperSystems/Wireframe-Transparent-Culled"
+Shader "Wireframe-Clay"
 {
 	Properties
 	{
