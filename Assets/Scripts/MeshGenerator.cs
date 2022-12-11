@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Leap.Unity.Interaction;
 
 [RequireComponent(typeof(MeshFilter))]
 public class MeshGenerator : MonoBehaviour
@@ -60,7 +61,7 @@ public class MeshGenerator : MonoBehaviour
             go.GetComponent<MeshRenderer>().material = Resources.Load("Materials/ClayMat", typeof(Material)) as Material;
             SendHandsToShader sd = go.AddComponent<SendHandsToShader>();
             sd.handManager = handManager;
-            // ADD INTERACTION LEAP MOTION...
+            go.AddComponent<InteractionBehaviour>();
 
             listObj.Add(go);
         }
