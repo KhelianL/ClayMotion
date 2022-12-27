@@ -11,7 +11,7 @@ public class MeshGenerator : MonoBehaviour
 
     private GameObject tmpGo;
 
-    private float PINCH_DISTANCE_LOW = 0.03f;
+    private float PINCH_DISTANCE_LOW = 0.02f;
     private float PINCH_DISTANCE_HIGH = 0.04f;
 
     private bool isPinching = false;
