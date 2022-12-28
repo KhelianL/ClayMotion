@@ -18,9 +18,9 @@ public class MeshGenerator : MonoBehaviour
 
     void Update()
     {
-        SelectMesh selectMesh = gameObject.GetComponent<SendButtonMenu>().ChooseMesh;
+        SelectOption selectMesh = gameObject.GetComponent<SendButtonMenu>().ChooseMesh;
 
-        if (selectMesh != SelectMesh.NONE) 
+        if (selectMesh != SelectOption.NONE && selectMesh != SelectOption.EXTRUDE) 
         {
             Vector3 rightIndex = handManager.R_index_end.transform.position;
             Vector3 rightThumb = handManager.R_thumb_end.transform.position;
@@ -41,13 +41,13 @@ public class MeshGenerator : MonoBehaviour
                 isPinching = true;
                 switch (selectMesh)
                 {
-                    case SelectMesh.CUBE:
+                    case SelectOption.CUBE:
                         tmpGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         break;
-                    case SelectMesh.SPHERE:
+                    case SelectOption.SPHERE:
                         tmpGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                         break;
-                    case SelectMesh.CYLINDER:
+                    case SelectOption.CYLINDER:
                         tmpGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                         break;
                     default:
@@ -73,13 +73,13 @@ public class MeshGenerator : MonoBehaviour
                 GameObject go;
                 switch (selectMesh)
                 {
-                    case SelectMesh.CUBE:
+                    case SelectOption.CUBE:
                         go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         break;
-                    case SelectMesh.SPHERE:
+                    case SelectOption.SPHERE:
                         go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                         break;
-                    case SelectMesh.CYLINDER:
+                    case SelectOption.CYLINDER:
                         go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                         break;
                     default:
@@ -100,11 +100,6 @@ public class MeshGenerator : MonoBehaviour
                 listObj.Add(go);
             }
         }
-
-
-
-
-
     }
 
     public void deleteObj()
