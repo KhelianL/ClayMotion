@@ -12,15 +12,19 @@ public class MeshGenerator : MonoBehaviour
     private GameObject tmpGo;
 
     private float PINCH_DISTANCE_LOW = 0.02f;
-    private float PINCH_DISTANCE_HIGH = 0.04f;
+    private float PINCH_DISTANCE_HIGH = 0.03f;
 
     private bool isPinching = false;
+
+    private Vector3[] tmpVertices;
+    private Vector3 PinchStart;
+    private float MODIFY_DISTANCE = 0.3f;
 
     void Update()
     {
         SelectOption selectMesh = gameObject.GetComponent<SendButtonMenu>().ChooseMesh;
 
-        if (selectMesh != SelectOption.NONE && selectMesh != SelectOption.EXTRUDE) 
+        if (selectMesh == SelectOption.SPHERE || selectMesh == SelectOption.CUBE || selectMesh == SelectOption.CYLINDER)
         {
             Vector3 rightIndex = handManager.R_index_end.transform.position;
             Vector3 rightThumb = handManager.R_thumb_end.transform.position;
@@ -96,8 +100,62 @@ public class MeshGenerator : MonoBehaviour
                 SendHandsToShader sd = go.AddComponent<SendHandsToShader>();
                 sd.handManager = handManager;
                 go.AddComponent<InteractionBehaviour>();
+                go.tag = "Player";
 
                 listObj.Add(go);
+            }
+        }
+        else if (selectMesh == SelectOption.EXTRUDE)
+        {
+            GameObject go = gameObject.GetComponent<SendButtonMenu>().ClosetsObject;
+            if (go != null)
+            {
+                if (go.GetComponent<MeshFilter>().mesh != null)
+                {
+                    Mesh mesh = go.GetComponent<MeshFilter>().mesh;
+                    Vector3 rightIndex = handManager.R_index_end.transform.position;
+                    Vector3 rightThumb = handManager.R_thumb_end.transform.position;
+                    Vector3 rightPinchPos = (rightIndex + rightThumb) / 2;
+                    float rightDiff = (rightIndex - rightThumb).magnitude;
+
+                    // Start Pinch
+                    if (!isPinching && rightDiff < PINCH_DISTANCE_LOW)
+                    {
+                        isPinching = true;
+                        tmpVertices = mesh.vertices;
+                        PinchStart = rightPinchPos;
+
+                        tmpGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    }
+
+                    // While Pinch
+                    if (isPinching)
+                    {
+                        tmpGo.transform.position = rightPinchPos;
+                        tmpGo.transform.localScale = new Vector3(MODIFY_DISTANCE, MODIFY_DISTANCE, MODIFY_DISTANCE);
+                    }
+
+                    // End Pinch
+                    if (isPinching && rightDiff >= PINCH_DISTANCE_HIGH)
+                    {
+                        isPinching = false;
+                        Destroy(tmpGo);
+
+                        float powerDist = (PinchStart - rightPinchPos).magnitude; // Start - End
+                        for (int i = 0; i < tmpVertices.Length; i++)
+                        {
+                            Vector3 V = transform.TransformPoint(tmpVertices[i]); // Mesh point in world pos
+                            if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
+                            {
+                                float distPoint = (rightPinchPos - V).magnitude;
+                                Vector3 targetDirection = (rightPinchPos - V).normalized;
+                                V += targetDirection * (distPoint / powerDist);
+                                tmpVertices[i] = transform.InverseTransformPoint(V);
+                            }
+                        }
+                        mesh.vertices = tmpVertices;
+                    }
+                }
             }
         }
     }
@@ -108,5 +166,10 @@ public class MeshGenerator : MonoBehaviour
         {
             Destroy(listObj[i]);
         }
+    }
+
+    public List<GameObject> ListObj
+    {
+        get { return listObj; }
     }
 }
