@@ -18,7 +18,7 @@ public class MeshGenerator : MonoBehaviour
 
     private Vector3[] tmpVertices;
     private Vector3 PinchStart;
-    private float MODIFY_DISTANCE = 0.3f;
+    private float MODIFY_DISTANCE = 0.15f;
 
     void Update()
     {
@@ -113,6 +113,8 @@ public class MeshGenerator : MonoBehaviour
                 if (go.GetComponent<MeshFilter>().mesh != null)
                 {
                     Mesh mesh = go.GetComponent<MeshFilter>().mesh;
+                    Transform m_transform = go.GetComponent<Transform>();
+
                     Vector3 rightIndex = handManager.R_index_end.transform.position;
                     Vector3 rightThumb = handManager.R_thumb_end.transform.position;
                     Vector3 rightPinchPos = (rightIndex + rightThumb) / 2;
@@ -126,13 +128,15 @@ public class MeshGenerator : MonoBehaviour
                         PinchStart = rightPinchPos;
 
                         tmpGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        Material transparentMat = Resources.Load("Materials/TransparentMat", typeof(Material)) as Material;
+                        tmpGo.GetComponent<Renderer>().material = transparentMat;
                     }
 
                     // While Pinch
                     if (isPinching)
                     {
                         tmpGo.transform.position = rightPinchPos;
-                        tmpGo.transform.localScale = new Vector3(MODIFY_DISTANCE, MODIFY_DISTANCE, MODIFY_DISTANCE);
+                        tmpGo.transform.localScale = new Vector3(MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2);
                     }
 
                     // End Pinch
@@ -140,20 +144,22 @@ public class MeshGenerator : MonoBehaviour
                     {
                         isPinching = false;
                         Destroy(tmpGo);
-
+                        
                         float powerDist = (PinchStart - rightPinchPos).magnitude; // Start - End
                         for (int i = 0; i < tmpVertices.Length; i++)
                         {
-                            Vector3 V = transform.TransformPoint(tmpVertices[i]); // Mesh point in world pos
+                            Vector3 V = m_transform.TransformPoint(tmpVertices[i]); // Mesh point in world pos
                             if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
                             {
                                 float distPoint = (rightPinchPos - V).magnitude;
                                 Vector3 targetDirection = (rightPinchPos - V).normalized;
-                                V += targetDirection * (distPoint / powerDist);
-                                tmpVertices[i] = transform.InverseTransformPoint(V);
+                                V += targetDirection * 0.05f;
+                                // V += targetDirection * (powerDist / distPoint);
+                                tmpVertices[i] = m_transform.InverseTransformPoint(V);
                             }
                         }
                         mesh.vertices = tmpVertices;
+                        
                     }
                 }
             }

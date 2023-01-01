@@ -75,6 +75,7 @@ public class SendButtonMenu : MonoBehaviour
     {
         ToggleOffCube();
         ToggleOffCylinder();
+        ToggleOffRotation();
         ToggleOffExtrude();
         SwitchToggle(SelectOption.SPHERE, true);
     }
@@ -87,6 +88,7 @@ public class SendButtonMenu : MonoBehaviour
     {
         ToggleOffSphere();
         ToggleOffCylinder();
+        ToggleOffRotation();
         ToggleOffExtrude();
         SwitchToggle(SelectOption.CUBE, true);
     }
@@ -99,6 +101,7 @@ public class SendButtonMenu : MonoBehaviour
     {
         ToggleOffSphere();
         ToggleOffCube();
+        ToggleOffRotation();
         ToggleOffExtrude();
         SwitchToggle(SelectOption.CYLINDER, true);
     }
