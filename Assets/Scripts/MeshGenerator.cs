@@ -3,6 +3,7 @@ using UnityEngine;
 using Leap.Unity.Interaction;
 using System.Net;
 using System;
+using System.Linq;
 
 [RequireComponent(typeof(MeshFilter))]
 public class MeshGenerator : MonoBehaviour
@@ -200,31 +201,33 @@ public class MeshGenerator : MonoBehaviour
                     tmpGo.transform.position = rightPinchPos;
 
                     // Start Pinch
-                    if (rightDiff < PINCH_DISTANCE_LOW)
+                    if (!isPinching && rightDiff < PINCH_DISTANCE_LOW)
                     {
                         tmpGo.GetComponent<Renderer>().material = Resources.Load("Materials/TransparentMat2", typeof(Material)) as Material;
+                        isPinching = true;
                     }
 
                     // End Pinch
-                    if (rightDiff >= PINCH_DISTANCE_HIGH)
+                    if (isPinching && rightDiff >= PINCH_DISTANCE_HIGH)
                     {
+                        isPinching = false;
+
                         Mesh mesh = go.GetComponent<MeshFilter>().mesh;
-                        Transform m_transform = go.GetComponent<Transform>();
-                        // mesh.vertices
-                        // mesh.triangles
 
-                        for (int i = 0; i < mesh.vertices.Length; i++)
+                        Vector3[] tmpVertices = mesh.vertices;
+                        int[] tmpTriangles = mesh.triangles;
+
+                        List<List<int>> oneRing = CollectOneRing(tmpVertices, tmpTriangles);
+
+                        
+                        for (int i = 0; i < tmpVertices.Length; i++)
                         {
-                            Vector3 V = m_transform.TransformPoint(startVertices[i]); // Mesh point in world pos
-
-                            if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
+                            if ((PinchStart - tmpVertices[i]).magnitude < MODIFY_DISTANCE)
                             {
-                                // Faire des trucs
-                                // Avec OneRing
+                                // TODO
                             }
-                            mesh.vertices[i] = m_transform.InverseTransformPoint(V);
                         }
-
+                        
                         tmpGo.GetComponent<Renderer>().material = Resources.Load("Materials/TransparentMat", typeof(Material)) as Material;
                     }
                 }
@@ -250,39 +253,46 @@ public class MeshGenerator : MonoBehaviour
         get { return tmpGo; }
     }
 
-    public bool contain(List<int> listElem, int element)
+    public static List<List<int>> CollectOneRing(Vector3[] vertices, int[] triangles)
     {
-        for (int i = 0; i < listElem.Count; i++)
-        {
-            if (listElem[i] == element)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+        // Créer un dictionnaire pour stocker les 1-voisinages de chaque sommet
+        Dictionary<int, HashSet<int>> oneRing = new Dictionary<int, HashSet<int>>();
 
-    public List<int>[] collectOneRing(Vector3[] vertices, int[] triangles)
-    {
-        List<int>[] oneRing = new List<int>[vertices.Length];
-
+        // Pour chaque triangle, ajouter les sommets adjacents au 1-voisinage de chaque sommet
         for (int i = 0; i < triangles.Length; i += 3)
         {
-            for (int j = 0; j < 3; j++)
+            int a = triangles[i];
+            int b = triangles[i + 1];
+            int c = triangles[i + 2];
+
+            if (!oneRing.ContainsKey(a))
             {
-                for (int k = 0; k < 3; k++)
-                {
-                    if (j != k)
-                    {
-                        if (!contain(oneRing[triangles[i + j]], triangles[i + k]))
-                        {
-                            oneRing[triangles[i + j]].Add(triangles[i + k]);
-                        }
-                    }
-                }
+                oneRing[a] = new HashSet<int>();
             }
+            if (!oneRing.ContainsKey(b))
+            {
+                oneRing[b] = new HashSet<int>();
+            }
+            if (!oneRing.ContainsKey(c))
+            {
+                oneRing[c] = new HashSet<int>();
+            }
+
+            oneRing[a].Add(b);
+            oneRing[a].Add(c);
+            oneRing[b].Add(a);
+            oneRing[b].Add(c);
+            oneRing[c].Add(a);
+            oneRing[c].Add(b);
         }
 
-        return oneRing;
+        // Conversion
+        List<List<int>> oneRingList = new List<List<int>>();
+        foreach (int key in oneRing.Keys)
+        {
+            oneRingList.Add(oneRing[key].ToList());
+        }
+
+        return oneRingList;
     }
 }
