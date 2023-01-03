@@ -17,6 +17,7 @@ public class MeshGenerator : MonoBehaviour
     private bool isPinching = false;
 
     private Vector3[] tmpVertices;
+    private Vector3[] startVertices;
     private Vector3 PinchStart;
     private float MODIFY_DISTANCE = 0.15f;
 
@@ -128,7 +129,10 @@ public class MeshGenerator : MonoBehaviour
                     if (!isPinching && rightDiff < PINCH_DISTANCE_LOW)
                     {
                         isPinching = true;
-                        tmpVertices = mesh.vertices;
+                        startVertices = mesh.vertices;
+                        System.Array.Resize(ref tmpVertices, mesh.vertices.Length);
+
+
                         PinchStart = rightPinchPos;
 
                         tmpGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -143,6 +147,22 @@ public class MeshGenerator : MonoBehaviour
                         {
                             tmpGo.transform.position = rightPinchPos;
                             tmpGo.transform.localScale = new Vector3(MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2);
+
+
+                            for (int i = 0; i < tmpVertices.Length; i++)
+                            {
+                                Vector3 V = m_transform.TransformPoint(startVertices[i]); // Mesh point in world pos
+                                
+                                if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
+                                {
+                                    float modifyCoef = 1 - ((PinchStart - V).magnitude / MODIFY_DISTANCE);
+                                    Vector3 targetDirection = rightPinchPos - V;
+                                    V += targetDirection * modifyCoef;
+                                }
+                                tmpVertices[i] = m_transform.InverseTransformPoint(V);
+                            }
+                        mesh.vertices = tmpVertices;
+
                         }
                     }
 
@@ -152,18 +172,19 @@ public class MeshGenerator : MonoBehaviour
                         isPinching = false;
                         Destroy(tmpGo);
 
-                        for (int i = 0; i < tmpVertices.Length; i++)
-                        {
-                            Vector3 V = m_transform.TransformPoint(tmpVertices[i]); // Mesh point in world pos
-                            if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
-                            {
-                                float modifyCoef = 1 - ((PinchStart - V).magnitude / MODIFY_DISTANCE);
-                                Vector3 targetDirection = rightPinchPos - V;
-                                V += targetDirection * modifyCoef;
-                                tmpVertices[i] = m_transform.InverseTransformPoint(V);
-                            }
-                        }
-                        mesh.vertices = tmpVertices;
+                        // for (int i = 0; i < tmpVertices.Length; i++)
+                        // {
+                        //     Vector3 V = m_transform.TransformPoint(startVertices[i]); // Mesh point in world pos
+                        //     if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
+                        //     {
+                        //         float modifyCoef = 1 - ((PinchStart - V).magnitude / MODIFY_DISTANCE);
+                        //         Vector3 targetDirection = rightPinchPos - V;
+                        //         V = startVertices[i] + targetDirection * modifyCoef;
+                        //         tmpVertices[i] = m_transform.InverseTransformPoint(V);
+                        //     }
+                        // }
+
+                        // mesh.vertices = tmpVertices;
 
                     }
                 }
