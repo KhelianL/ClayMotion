@@ -205,6 +205,8 @@ public class MeshGenerator : MonoBehaviour
                     {
                         tmpGo.GetComponent<Renderer>().material = Resources.Load("Materials/TransparentMat2", typeof(Material)) as Material;
                         isPinching = true;
+
+                        PinchStart = rightPinchPos;
                     }
 
                     // End Pinch
@@ -213,8 +215,11 @@ public class MeshGenerator : MonoBehaviour
                         isPinching = false;
 
                         Mesh mesh = go.GetComponent<MeshFilter>().mesh;
+                        Transform m_transform = go.GetComponent<Transform>();
 
+                        Vector3[] resVertices = new Vector3[mesh.vertices.Length];                        
                         Vector3[] tmpVertices = mesh.vertices;
+
                         int[] tmpTriangles = mesh.triangles;
 
                         List<List<int>> oneRing = CollectOneRing(tmpVertices, tmpTriangles);
@@ -222,18 +227,48 @@ public class MeshGenerator : MonoBehaviour
                         
                         for (int i = 0; i < tmpVertices.Length; i++)
                         {
-                            if ((PinchStart - tmpVertices[i]).magnitude < MODIFY_DISTANCE)
+                            Vector3 V = m_transform.TransformPoint(tmpVertices[i]); // Mesh point in world pos
+
+                            if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
                             {
-                                // TODO
+                               resVertices[i] = SmoothVertex(i, 0.5f, oneRing, tmpVertices);
+                            }else{
+                                resVertices[i] = tmpVertices[i];
                             }
                         }
-                        
+
+                        go.GetComponent<MeshFilter>().mesh.vertices = resVertices;
                         tmpGo.GetComponent<Renderer>().material = Resources.Load("Materials/TransparentMat", typeof(Material)) as Material;
                     }
                 }
             }
+        }    }
+
+
+    public static Vector3 SmoothVertex(int vertInd, float coef, List<List<int>> oneRing, Vector3[] vertices) {
+        // Récupérer la liste des 1-voisins du sommet
+        List<int> oneRingVerts = oneRing[vertInd];
+        
+        // Initialiser la position smoothée du sommet à sa propre position
+        Vector3 smoothPos = vertices[vertInd];
+        
+        // Pour chaque 1-voisin du sommet, ajouter sa position au total
+        Debug.Log("OneRingSize = ");
+        Debug.Log(oneRingVerts.Count);
+
+        foreach (int oneRingVert in oneRingVerts) {
+            smoothPos += vertices[oneRingVert];
         }
+        
+        // Diviser le total par le nombre de sommets adjacents + 1 pour obtenir la moyenne
+        smoothPos /= (oneRingVerts.Count + 1);
+        
+        // Appliquer le coefficient de lissage
+        smoothPos = Vector3.Lerp(vertices[vertInd], smoothPos, coef);
+        
+        return smoothPos;
     }
+
 
     public void deleteObj()
     {
@@ -255,7 +290,7 @@ public class MeshGenerator : MonoBehaviour
 
     public static List<List<int>> CollectOneRing(Vector3[] vertices, int[] triangles)
     {
-        // Cr�er un dictionnaire pour stocker les 1-voisinages de chaque sommet
+        // Cr�er un dictionnaire pour stocker les 1-voisinages de chaque sommet
         Dictionary<int, HashSet<int>> oneRing = new Dictionary<int, HashSet<int>>();
 
         // Pour chaque triangle, ajouter les sommets adjacents au 1-voisinage de chaque sommet
