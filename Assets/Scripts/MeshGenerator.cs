@@ -11,8 +11,8 @@ public class MeshGenerator : MonoBehaviour
 
     private GameObject tmpGo;
 
-    private float PINCH_DISTANCE_LOW = 0.02f;
-    private float PINCH_DISTANCE_HIGH = 0.03f;
+    private float PINCH_DISTANCE_LOW = 0.03f;
+    private float PINCH_DISTANCE_HIGH = 0.05f;
 
     private bool isPinching = false;
 
@@ -144,17 +144,14 @@ public class MeshGenerator : MonoBehaviour
                     {
                         isPinching = false;
                         Destroy(tmpGo);
-                        
-                        float powerDist = (PinchStart - rightPinchPos).magnitude; // Start - End
                         for (int i = 0; i < tmpVertices.Length; i++)
                         {
                             Vector3 V = m_transform.TransformPoint(tmpVertices[i]); // Mesh point in world pos
                             if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
                             {
-                                float distPoint = (rightPinchPos - V).magnitude;
-                                Vector3 targetDirection = (rightPinchPos - V).normalized;
-                                V += targetDirection * 0.05f;
-                                // V += targetDirection * (powerDist / distPoint);
+                                float modifyCoef = 1 - ((PinchStart - V).magnitude / MODIFY_DISTANCE ); 
+                                Vector3 targetDirection = rightPinchPos - V;
+                                V += targetDirection * modifyCoef;
                                 tmpVertices[i] = m_transform.InverseTransformPoint(V);
                             }
                         }

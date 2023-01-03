@@ -165,6 +165,7 @@ public class SendButtonMenu : MonoBehaviour
         if (closetsObject != null)
         {
             SwitchToggle(SelectOption.EXTRUDE, true);
+            closetsObject.GetComponent<InteractionBehaviour>().enabled = false;
         }
     }
     public void ToggleOffExtrude()
@@ -174,7 +175,9 @@ public class SendButtonMenu : MonoBehaviour
 
         if (closetsObject != null)
         {
+            closetsObject.GetComponent<InteractionBehaviour>().enabled = true;
             closetsObject = null;
+
         }
     }
 
