@@ -14,8 +14,8 @@ public class MeshGenerator : MonoBehaviour
 
     private GameObject tmpGo;
 
-    private float PINCH_DISTANCE_LOW = 0.03f;
-    private float PINCH_DISTANCE_HIGH = 0.05f;
+    private float PINCH_DISTANCE_LOW = 0.02f;
+    private float PINCH_DISTANCE_HIGH = 0.03f;
 
     private bool isPinching = false;
 
@@ -50,10 +50,10 @@ public class MeshGenerator : MonoBehaviour
                 switch (selectMesh)
                 {
                     case SelectOption.CUBE:
-                        tmpGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        tmpGo = gameObject.GetComponent<PrimitiveMesh>().GenerateCube();
                         break;
                     case SelectOption.SPHERE:
-                        tmpGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        tmpGo = gameObject.GetComponent<PrimitiveMesh>().GenerateSphere();
                         break;
                     case SelectOption.CYLINDER:
                         tmpGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -86,10 +86,10 @@ public class MeshGenerator : MonoBehaviour
                 switch (selectMesh)
                 {
                     case SelectOption.CUBE:
-                        go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        go = gameObject.GetComponent<PrimitiveMesh>().GenerateCube();
                         break;
                     case SelectOption.SPHERE:
-                        go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        go = gameObject.GetComponent<PrimitiveMesh>().GenerateSphere();
                         break;
                     case SelectOption.CYLINDER:
                         go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
