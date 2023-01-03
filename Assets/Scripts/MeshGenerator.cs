@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Leap.Unity.Interaction;
+using System.Net;
+using System;
 
 [RequireComponent(typeof(MeshFilter))]
 public class MeshGenerator : MonoBehaviour
@@ -117,9 +119,6 @@ public class MeshGenerator : MonoBehaviour
             {
                 if (go.GetComponent<MeshFilter>().mesh != null)
                 {
-                    Mesh mesh = go.GetComponent<MeshFilter>().mesh;
-                    Transform m_transform = go.GetComponent<Transform>();
-
                     Vector3 rightIndex = handManager.R_index_end.transform.position;
                     Vector3 rightThumb = handManager.R_thumb_end.transform.position;
                     Vector3 rightPinchPos = (rightIndex + rightThumb) / 2;
@@ -129,6 +128,8 @@ public class MeshGenerator : MonoBehaviour
                     if (!isPinching && rightDiff < PINCH_DISTANCE_LOW)
                     {
                         isPinching = true;
+
+                        Mesh mesh = go.GetComponent<MeshFilter>().mesh;
                         startVertices = mesh.vertices;
                         System.Array.Resize(ref tmpVertices, mesh.vertices.Length);
 
@@ -136,8 +137,10 @@ public class MeshGenerator : MonoBehaviour
                         PinchStart = rightPinchPos;
 
                         tmpGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        tmpGo.transform.localScale = new Vector3(MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2);
                         Material transparentMat = Resources.Load("Materials/TransparentMat", typeof(Material)) as Material;
                         tmpGo.GetComponent<Renderer>().material = transparentMat;
+                        Destroy(tmpGo.GetComponent<SphereCollider>());
                     }
 
                     // While Pinch
@@ -146,13 +149,13 @@ public class MeshGenerator : MonoBehaviour
                         if (tmpGo != null)
                         {
                             tmpGo.transform.position = rightPinchPos;
-                            tmpGo.transform.localScale = new Vector3(MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2);
 
+                            Transform m_transform = go.GetComponent<Transform>();
 
                             for (int i = 0; i < tmpVertices.Length; i++)
                             {
                                 Vector3 V = m_transform.TransformPoint(startVertices[i]); // Mesh point in world pos
-                                
+
                                 if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
                                 {
                                     float modifyCoef = 1 - ((PinchStart - V).magnitude / MODIFY_DISTANCE);
@@ -161,8 +164,7 @@ public class MeshGenerator : MonoBehaviour
                                 }
                                 tmpVertices[i] = m_transform.InverseTransformPoint(V);
                             }
-                        mesh.vertices = tmpVertices;
-
+                            go.GetComponent<MeshFilter>().mesh.vertices = tmpVertices;
                         }
                     }
 
@@ -171,21 +173,59 @@ public class MeshGenerator : MonoBehaviour
                     {
                         isPinching = false;
                         Destroy(tmpGo);
+                    }
+                }
+            }
+        }
+        else if (selectMesh == SelectOption.SMOOTH)
+        {
+            GameObject go = gameObject.GetComponent<SendButtonMenu>().ClosetsObject;
+            if (go != null)
+            {
+                if (go.GetComponent<MeshFilter>().mesh != null)
+                {
+                    if (gameObject.GetComponent<SendButtonMenu>().PassSmooth)
+                    {
+                        gameObject.GetComponent<SendButtonMenu>().PassSmooth = false;
+                        tmpGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        tmpGo.transform.localScale = new Vector3(MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2, MODIFY_DISTANCE * 2);
+                        tmpGo.GetComponent<Renderer>().material = Resources.Load("Materials/TransparentMat", typeof(Material)) as Material;
+                        Destroy(tmpGo.GetComponent<SphereCollider>());
+                    }
+                    Vector3 rightIndex = handManager.R_index_end.transform.position;
+                    Vector3 rightThumb = handManager.R_thumb_end.transform.position;
+                    Vector3 rightPinchPos = (rightIndex + rightThumb) / 2;
+                    float rightDiff = (rightIndex - rightThumb).magnitude;
 
-                        // for (int i = 0; i < tmpVertices.Length; i++)
-                        // {
-                        //     Vector3 V = m_transform.TransformPoint(startVertices[i]); // Mesh point in world pos
-                        //     if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
-                        //     {
-                        //         float modifyCoef = 1 - ((PinchStart - V).magnitude / MODIFY_DISTANCE);
-                        //         Vector3 targetDirection = rightPinchPos - V;
-                        //         V = startVertices[i] + targetDirection * modifyCoef;
-                        //         tmpVertices[i] = m_transform.InverseTransformPoint(V);
-                        //     }
-                        // }
+                    tmpGo.transform.position = rightPinchPos;
 
-                        // mesh.vertices = tmpVertices;
+                    // Start Pinch
+                    if (rightDiff < PINCH_DISTANCE_LOW)
+                    {
+                        tmpGo.GetComponent<Renderer>().material = Resources.Load("Materials/TransparentMat2", typeof(Material)) as Material;
+                    }
 
+                    // End Pinch
+                    if (rightDiff >= PINCH_DISTANCE_HIGH)
+                    {
+                        Mesh mesh = go.GetComponent<MeshFilter>().mesh;
+                        Transform m_transform = go.GetComponent<Transform>();
+                        // mesh.vertices
+                        // mesh.triangles
+
+                        for (int i = 0; i < mesh.vertices.Length; i++)
+                        {
+                            Vector3 V = m_transform.TransformPoint(startVertices[i]); // Mesh point in world pos
+
+                            if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
+                            {
+                                // Faire des trucs
+                                // Avec OneRing
+                            }
+                            mesh.vertices[i] = m_transform.InverseTransformPoint(V);
+                        }
+
+                        tmpGo.GetComponent<Renderer>().material = Resources.Load("Materials/TransparentMat", typeof(Material)) as Material;
                     }
                 }
             }
@@ -208,5 +248,41 @@ public class MeshGenerator : MonoBehaviour
     public GameObject TmpGo
     {
         get { return tmpGo; }
+    }
+
+    public bool contain(List<int> listElem, int element)
+    {
+        for (int i = 0; i < listElem.Count; i++)
+        {
+            if (listElem[i] == element)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<int>[] collectOneRing(Vector3[] vertices, int[] triangles)
+    {
+        List<int>[] oneRing = new List<int>[vertices.Length];
+
+        for (int i = 0; i < triangles.Length; i += 3)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    if (j != k)
+                    {
+                        if (!contain(oneRing[triangles[i + j]], triangles[i + k]))
+                        {
+                            oneRing[triangles[i + j]].Add(triangles[i + k]);
+                        }
+                    }
+                }
+            }
+        }
+
+        return oneRing;
     }
 }

@@ -20,6 +20,7 @@ public class SendButtonMenu : MonoBehaviour
     public GameObject meshTransformTools;
     public Transform resetTransformTools;
     private GameObject closetsObject;
+    private bool passSmooth = false;
 
     public GameObject sphereButton;
     public GameObject cubeButton;
@@ -196,6 +197,8 @@ public class SendButtonMenu : MonoBehaviour
         ToggleOffRotation();
         ToggleOffExtrude();
 
+        passSmooth = true;
+
         findClosestObject();
         if (closetsObject != null)
         {
@@ -206,6 +209,14 @@ public class SendButtonMenu : MonoBehaviour
     {
         SwitchToggle(SelectOption.SMOOTH, false);
         toggleSmooth.Untoggle();
+
+        passSmooth = false;
+
+        GameObject go = gameObject.GetComponent<MeshGenerator>().TmpGo;
+        if (go != null)
+        {
+            Destroy(go);
+        }
 
         if (closetsObject != null)
         {
@@ -294,5 +305,11 @@ public class SendButtonMenu : MonoBehaviour
     public GameObject ClosetsObject
     {
         get { return closetsObject; }
+    }
+
+    public bool PassSmooth
+    {
+        get { return passSmooth; }
+        set { passSmooth = value; }
     }
 }
