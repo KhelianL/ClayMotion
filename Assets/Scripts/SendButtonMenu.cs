@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using Leap.InteractionEngine.Examples;
 using Leap.Unity.Interaction;
-using LeapInternal;
 using UnityEngine;
 
 public enum SelectOption
@@ -10,6 +8,7 @@ public enum SelectOption
     NONE,
     EXTRUDE,
     ROTATION,
+    SMOOTH,
     SPHERE,
     CUBE,
     CYLINDER
@@ -26,6 +25,7 @@ public class SendButtonMenu : MonoBehaviour
     public GameObject cubeButton;
     public GameObject cylinderButton;
     public GameObject rotationButton;
+    public GameObject smoothButton;
     public GameObject extrudeButton;
 
     public GameObject sphereObj;
@@ -33,12 +33,14 @@ public class SendButtonMenu : MonoBehaviour
     public GameObject cylinderObj;
     public GameObject rotationObj;
     public GameObject extrudeObj;
+    public GameObject smoothObj;
     public GameObject deleteObj;
 
     private InteractionToggle toggleSphere;
     private InteractionToggle toggleCube;
     private InteractionToggle toggleCylinder;
     private InteractionToggle toggleRotation;
+    private InteractionToggle toggleSmooth;
     private InteractionToggle toggleExtrude;
 
     private Material[] materialsSphere;
@@ -46,6 +48,7 @@ public class SendButtonMenu : MonoBehaviour
     private Material[] materialsCylinder;
     private Material[] materialsRotation;
     private Material[] materialsExtrude;
+    private Material[] materialsSmooth;
     private Material[] materialsDelete;
 
     protected SelectOption chooseMesh;
@@ -59,6 +62,7 @@ public class SendButtonMenu : MonoBehaviour
         toggleCube = cubeButton.GetComponent<InteractionToggle>();
         toggleCylinder = cylinderButton.GetComponent<InteractionToggle>();
         toggleRotation = rotationButton.GetComponent<InteractionToggle>();
+        toggleSmooth = smoothButton.GetComponent<InteractionToggle>();
         toggleExtrude = extrudeButton.GetComponent<InteractionToggle>();
 
         materialsSphere = sphereObj.GetComponent<Renderer>().materials;
@@ -66,6 +70,7 @@ public class SendButtonMenu : MonoBehaviour
         materialsCylinder = cylinderObj.GetComponent<Renderer>().materials;
         materialsRotation = rotationObj.GetComponent<Renderer>().materials;
         materialsExtrude = extrudeObj.GetComponent<Renderer>().materials;
+        materialsSmooth = smoothObj.GetComponent<Renderer>().materials;
         materialsDelete = deleteObj.GetComponent<Renderer>().materials;
 
         ToggleOnSphere();
@@ -77,6 +82,8 @@ public class SendButtonMenu : MonoBehaviour
         ToggleOffCylinder();
         ToggleOffRotation();
         ToggleOffExtrude();
+        ToggleOffSmooth();
+
         SwitchToggle(SelectOption.SPHERE, true);
     }
     public void ToggleOffSphere()
@@ -90,6 +97,8 @@ public class SendButtonMenu : MonoBehaviour
         ToggleOffCylinder();
         ToggleOffRotation();
         ToggleOffExtrude();
+        ToggleOffSmooth();
+
         SwitchToggle(SelectOption.CUBE, true);
     }
     public void ToggleOffCube()
@@ -103,6 +112,8 @@ public class SendButtonMenu : MonoBehaviour
         ToggleOffCube();
         ToggleOffRotation();
         ToggleOffExtrude();
+        ToggleOffSmooth();
+
         SwitchToggle(SelectOption.CYLINDER, true);
     }
     public void ToggleOffCylinder()
@@ -117,11 +128,17 @@ public class SendButtonMenu : MonoBehaviour
         ToggleOffCube();
         ToggleOffCylinder();
         ToggleOffExtrude();
-        SwitchToggle(SelectOption.ROTATION, true);
+        ToggleOffSmooth();
 
-        meshTransformTools.SetActive(true);
 
         findClosestObject();
+        if (closetsObject != null)
+        {
+            SwitchToggle(SelectOption.ROTATION, true);
+            meshTransformTools.SetActive(true);
+            meshTransformTools.GetComponent<TransformTool>().target = closetsObject.transform;
+            meshTransformTools.transform.position = closetsObject.transform.position;
+        }
     }
     public void ToggleOffRotation()
     {
@@ -132,9 +149,6 @@ public class SendButtonMenu : MonoBehaviour
 
         if (closetsObject != null)
         {
-            closetsObject.GetComponent<Rigidbody>().isKinematic = false;
-            closetsObject.GetComponent<InteractionBehaviour>().enabled = true;
-            meshTransformTools.GetComponent<TransformTool>().target = resetTransformTools;
             closetsObject = null;
         }
     }
@@ -145,9 +159,13 @@ public class SendButtonMenu : MonoBehaviour
         ToggleOffCube();
         ToggleOffCylinder();
         ToggleOffRotation();
-        SwitchToggle(SelectOption.EXTRUDE, true);
+        ToggleOffSmooth();
 
         findClosestObject();
+        if (closetsObject != null)
+        {
+            SwitchToggle(SelectOption.EXTRUDE, true);
+        }
     }
     public void ToggleOffExtrude()
     {
@@ -156,12 +174,35 @@ public class SendButtonMenu : MonoBehaviour
 
         if (closetsObject != null)
         {
-            closetsObject.GetComponent<Rigidbody>().isKinematic = false;
-            closetsObject.GetComponent<InteractionBehaviour>().enabled = true;
-            meshTransformTools.GetComponent<TransformTool>().target = resetTransformTools;
             closetsObject = null;
         }
     }
+
+    public void ToggleOnSmooth()
+    {
+        ToggleOffSphere();
+        ToggleOffCube();
+        ToggleOffCylinder();
+        ToggleOffRotation();
+        ToggleOffExtrude();
+
+        findClosestObject();
+        if (closetsObject != null)
+        {
+            SwitchToggle(SelectOption.SMOOTH, true);
+        }
+    }
+    public void ToggleOffSmooth()
+    {
+        SwitchToggle(SelectOption.SMOOTH, false);
+        toggleSmooth.Untoggle();
+
+        if (closetsObject != null)
+        {
+            closetsObject = null;
+        }
+    }
+
 
     public void PressOnDelete()
     {
@@ -169,13 +210,15 @@ public class SendButtonMenu : MonoBehaviour
         deleteObj.GetComponent<Renderer>().materials = materialsDelete;
 
         ToggleOffRotation();
+        ToggleOffExtrude();
+        ToggleOffSmooth();
+
         gameObject.GetComponent<MeshGenerator>().deleteObj();
     }
     public void PressOffDelete()
     {
         materialsDelete[0] = Resources.Load("Materials/WhiteMat", typeof(Material)) as Material;
         deleteObj.GetComponent<Renderer>().materials = materialsDelete;
-        ToggleOffExtrude();
     }
 
     private void SwitchToggle(SelectOption call, bool b)
@@ -202,6 +245,10 @@ public class SendButtonMenu : MonoBehaviour
                 materialsExtrude[0] = Resources.Load((b ? "Materials/GlowBlueMat" : "Materials/WhiteMat"), typeof(Material)) as Material;
                 extrudeObj.GetComponent<Renderer>().materials = materialsExtrude;
                 break;
+            case SelectOption.SMOOTH:
+                materialsSmooth[0] = Resources.Load((b ? "Materials/GlowBlueMat" : "Materials/WhiteMat"), typeof(Material)) as Material;
+                smoothObj.GetComponent<Renderer>().materials = materialsSmooth;
+                break;
             default:
                 break;
         }
@@ -226,17 +273,6 @@ public class SendButtonMenu : MonoBehaviour
                     oldDistance = dist;
                 }
             }
-        }
-        if (closetsObject != null)
-        {
-            closetsObject.GetComponent<Rigidbody>().isKinematic = true;
-            closetsObject.transform.position = meshTransformTools.transform.position;
-            closetsObject.GetComponent<InteractionBehaviour>().enabled = false;
-            meshTransformTools.GetComponent<TransformTool>().target = closetsObject.transform;
-        }
-        else
-        {
-            meshTransformTools.GetComponent<TransformTool>().target = resetTransformTools;
         }
     }
 

@@ -100,7 +100,7 @@ public class MeshGenerator : MonoBehaviour
                 SendHandsToShader sd = go.AddComponent<SendHandsToShader>();
                 sd.handManager = handManager;
                 go.AddComponent<InteractionBehaviour>();
-                go.tag = "Player";
+                go.GetComponent<Rigidbody>().isKinematic = true;
 
                 listObj.Add(go);
             }
