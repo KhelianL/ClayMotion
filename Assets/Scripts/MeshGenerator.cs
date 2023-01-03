@@ -56,10 +56,10 @@ public class MeshGenerator : MonoBehaviour
                         tmpGo = gameObject.GetComponent<PrimitiveMesh>().GenerateSphere();
                         break;
                     case SelectOption.CYLINDER:
-                        tmpGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        tmpGo = gameObject.GetComponent<PrimitiveMesh>().GenerateCylinder();
                         break;
                     default:
-                        tmpGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        tmpGo = gameObject.GetComponent<PrimitiveMesh>().GenerateSphere();
                         break;
                 }
             }
@@ -92,10 +92,10 @@ public class MeshGenerator : MonoBehaviour
                         go = gameObject.GetComponent<PrimitiveMesh>().GenerateSphere();
                         break;
                     case SelectOption.CYLINDER:
-                        go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        go = gameObject.GetComponent<PrimitiveMesh>().GenerateCylinder();
                         break;
                     default:
-                        go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        go = gameObject.GetComponent<PrimitiveMesh>().GenerateSphere();
                         break;
                 }
 

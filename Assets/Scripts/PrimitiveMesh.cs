@@ -161,4 +161,84 @@ public class PrimitiveMesh : MonoBehaviour
 
         return res;
     }
+
+    public GameObject GenerateCylinder(int segments = 16, float height = 1.0f, float radius = 0.5f)
+    {
+        GameObject res = new GameObject();
+
+        res.AddComponent<MeshRenderer>();
+        CapsuleCollider collider = res.AddComponent<CapsuleCollider>();
+
+        collider.center = new Vector3(0, height / 2, 0);
+
+        Vector3[] vertices = new Vector3[(segments + 1) * 2 + 2];
+        int[] triangles = new int[segments * 12];
+        Vector3[] normals = new Vector3[vertices.Length];
+
+        int index = 0;
+        for (int i = 0; i <= segments; i++)
+        {
+            float angle = i * Mathf.PI * 2f / segments;
+
+            vertices[index++] = new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+            vertices[index++] = new Vector3(Mathf.Cos(angle) * radius, height, Mathf.Sin(angle) * radius);
+        }
+
+        vertices[index++] = new Vector3(0f, 0f, 0f);
+        vertices[index++] = new Vector3(0f, height, 0f);
+
+        index = 0;
+        for (int i = 0; i < segments; i++)
+        {
+            int baseIndex = i * 2;
+
+            triangles[index++] = baseIndex;
+            triangles[index++] = baseIndex + 1;
+            triangles[index++] = baseIndex + 2;
+
+            triangles[index++] = baseIndex + 2;
+            triangles[index++] = baseIndex + 1;
+            triangles[index++] = baseIndex + 3;
+
+            triangles[index++] = baseIndex;
+            triangles[index++] = baseIndex + 2;
+            triangles[index++] = vertices.Length - 2;
+
+            triangles[index++] = baseIndex + 1;
+            triangles[index++] = vertices.Length - 1;
+            triangles[index++] = baseIndex + 3;
+        }
+
+        for (int i = 0; i < triangles.Length; i += 3)
+        {
+            int i1 = triangles[i];
+            int i2 = triangles[i + 1];
+            int i3 = triangles[i + 2];
+
+            Vector3 v1 = vertices[i1];
+            Vector3 v2 = vertices[i2];
+            Vector3 v3 = vertices[i3];
+
+            Vector3 normal = Vector3.Normalize(Vector3.Cross(v2 - v1, v3 - v1));
+
+            normals[i1] = normal;
+            normals[i2] = normal;
+            normals[i3] = normal;
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.normals = normals;
+
+        MeshFilter meshFilter = res.AddComponent<MeshFilter>();
+        meshFilter.mesh = mesh;
+
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        res.GetComponent<Renderer>().material = Resources.Load("Materials/Standard", typeof(Material)) as Material; ;
+
+        return res;
+    }
 }
