@@ -26,21 +26,11 @@ Shader "Wireframe-Clay"
 	SubShader
 	{
 		Tags {
-            "IgnoreProjector"="True"
-            "Queue"="Transparent"
-            "RenderType"="Transparent"
+			"RenderType" = "Opaque"
         }
 
 		Pass
 		{
-			Blend SrcAlpha OneMinusSrcAlpha
-            ZWrite Off
-			Cull Back
-
-			// Wireframe shader based on the the following
-			// http://developer.download.nvidia.com/SDK/10/direct3d/Source/SolidWireframe/Doc/SolidWireframe.pdf
-			Tags { "LightMode" = "ForwardBase" } //For the first light
-
 			CGPROGRAM
 		
 				#pragma vertex vert
