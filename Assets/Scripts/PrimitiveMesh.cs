@@ -169,8 +169,6 @@ public class PrimitiveMesh : MonoBehaviour
         res.AddComponent<MeshRenderer>();
         CapsuleCollider collider = res.AddComponent<CapsuleCollider>();
 
-        collider.center = new Vector3(0, height / 2, 0);
-
         Vector3[] vertices = new Vector3[(segments + 1) * 2 + 2];
         int[] triangles = new int[segments * 12];
         Vector3[] normals = new Vector3[vertices.Length];
@@ -186,6 +184,12 @@ public class PrimitiveMesh : MonoBehaviour
 
         vertices[index++] = new Vector3(0f, 0f, 0f);
         vertices[index++] = new Vector3(0f, height, 0f);
+
+        // Reposition centre
+        for(int i=0; i< vertices.Length; i++)
+        {
+            vertices[i] -= new Vector3(0, height / 2.0f, 0);
+        }
 
         index = 0;
         for (int i = 0; i < segments; i++)
