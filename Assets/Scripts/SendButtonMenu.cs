@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using Leap.InteractionEngine.Examples;
 using Leap.Unity.Interaction;
 using UnityEngine;
@@ -17,6 +18,9 @@ public enum SelectOption
 
 public class SendButtonMenu : MonoBehaviour
 {
+    public GameObject MeshFocusedParticles;
+    private ParticleSystem ps;
+
     public GameObject meshTransformTools;
     public Transform resetTransformTools;
     private GameObject closetsObject;
@@ -73,6 +77,8 @@ public class SendButtonMenu : MonoBehaviour
         materialsExtrude = extrudeObj.GetComponent<Renderer>().materials;
         materialsSmooth = smoothObj.GetComponent<Renderer>().materials;
         materialsDelete = deleteObj.GetComponent<Renderer>().materials;
+
+        ps = MeshFocusedParticles.GetComponent<ParticleSystem>();
 
         ToggleOnSphere();
     }
@@ -169,6 +175,7 @@ public class SendButtonMenu : MonoBehaviour
         {
             SwitchToggle(SelectOption.EXTRUDE, true);
             closetsObject.GetComponent<InteractionBehaviour>().enabled = false;
+            visualizeMeshSelected(closetsObject.transform);
         }
     }
     public void ToggleOffExtrude()
@@ -183,7 +190,7 @@ public class SendButtonMenu : MonoBehaviour
         }
 
         GameObject go = gameObject.GetComponent<MeshGenerator>().TmpGo;
-        if(go != null)
+        if (go != null)
         {
             Destroy(go);
         }
@@ -197,12 +204,12 @@ public class SendButtonMenu : MonoBehaviour
         ToggleOffRotation();
         ToggleOffExtrude();
 
-        passSmooth = true;
-
         findClosestObject();
         if (closetsObject != null)
         {
+            passSmooth = true;
             SwitchToggle(SelectOption.SMOOTH, true);
+            visualizeMeshSelected(closetsObject.transform);
         }
     }
     public void ToggleOffSmooth()
@@ -230,6 +237,9 @@ public class SendButtonMenu : MonoBehaviour
         materialsDelete[0] = Resources.Load("Materials/GlowRedMat", typeof(Material)) as Material;
         deleteObj.GetComponent<Renderer>().materials = materialsDelete;
 
+        ToggleOffSphere();
+        ToggleOffCube();
+        ToggleOffCylinder();
         ToggleOffRotation();
         ToggleOffExtrude();
         ToggleOffSmooth();
@@ -275,6 +285,15 @@ public class SendButtonMenu : MonoBehaviour
         }
         chooseMesh = (b ? call : SelectOption.NONE);
 
+    }
+
+    private void visualizeMeshSelected(Transform t)
+    {
+        MeshFocusedParticles.SetActive(true);
+        MeshFocusedParticles.GetComponent<Transform>().position = t.position;
+        MeshFocusedParticles.GetComponent<Transform>().rotation = t.rotation;
+        MeshFocusedParticles.GetComponent<Transform>().localScale = t.localScale * 1.25f;
+        ps.Play();
     }
 
     private void findClosestObject()
