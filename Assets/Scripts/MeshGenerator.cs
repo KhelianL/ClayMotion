@@ -233,7 +233,7 @@ public class MeshGenerator : MonoBehaviour
                         
                         for (int i = 0; i < tmpVertices.Length; i++)
                         {
-                            Vector3 V = m_transform.TransformPoint(tmpVertices[i]); // Mesh point in world pos
+                            Vector3 V = m_transform.TransformPoint(tmpVertices[i]); //Mesh point in world pos
 
                             if ((PinchStart - V).magnitude < MODIFY_DISTANCE)
                             {
