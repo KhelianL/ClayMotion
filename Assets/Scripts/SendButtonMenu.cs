@@ -145,7 +145,7 @@ public class SendButtonMenu : MonoBehaviour
             meshTransformTools.SetActive(true);
             meshTransformTools.GetComponent<TransformTool>().target = closetsObject.transform;
             meshTransformTools.transform.position = closetsObject.transform.position;
-            meshTransformTools.transform.localScale = (closetsObject.transform.localScale.magnitude < 0.15f ? new Vector3(0.6f, 0.6f, 0.6f) : closetsObject.transform.localScale * 4.0f);
+            meshTransformTools.transform.localScale = (closetsObject.transform.localScale.magnitude < 0.15f ? new Vector3(0.75f, 0.75f, 0.75f) : closetsObject.transform.localScale * 5.0f);
         }
     }
     public void ToggleOffRotation()
@@ -210,6 +210,7 @@ public class SendButtonMenu : MonoBehaviour
             passSmooth = true;
             SwitchToggle(SelectOption.SMOOTH, true);
             visualizeMeshSelected(closetsObject.transform);
+            closetsObject.GetComponent<InteractionBehaviour>().enabled = false;
         }
     }
     public void ToggleOffSmooth()
@@ -227,6 +228,7 @@ public class SendButtonMenu : MonoBehaviour
 
         if (closetsObject != null)
         {
+            closetsObject.GetComponent<InteractionBehaviour>().enabled = true;
             closetsObject = null;
         }
     }
