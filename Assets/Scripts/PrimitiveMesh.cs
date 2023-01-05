@@ -7,7 +7,8 @@ public class PrimitiveMesh : MonoBehaviour
         GameObject res = new GameObject();
 
         res.AddComponent<MeshRenderer>();
-        res.AddComponent<BoxCollider>();
+        MeshCollider mc = res.AddComponent<MeshCollider>();
+        mc.convex = true;
 
         Vector3[] vertices = new Vector3[] {
             // face avant
@@ -76,6 +77,7 @@ public class PrimitiveMesh : MonoBehaviour
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
 
+        mc.sharedMesh = mesh;
         res.GetComponent<Renderer>().material = Resources.Load("Materials/Standard", typeof(Material)) as Material; ;
 
         return res;
@@ -92,7 +94,7 @@ public class PrimitiveMesh : MonoBehaviour
 
         System.Array.Resize(ref vertices, vertices.Length + triangles.Length);
         System.Array.Resize(ref normals, vertices.Length);
-        System.Array.Resize(ref triangles, triangles.Length*4);
+        System.Array.Resize(ref triangles, triangles.Length * 4);
 
         // Parcours chaque triangle du maillage
         for (int i = 0; i < nbStartTri; i += 3)
@@ -145,83 +147,86 @@ public class PrimitiveMesh : MonoBehaviour
 
         }
     }
-         public GameObject GenerateTore(int longitudeBands = 30, int latitudeBands = 30,  float R = 1.0f, float r = 0.5f, float radius = 0.5f)
+    
+    public GameObject GenerateTore(int longitudeBands = 30, int latitudeBands = 30, float R = 1.0f, float r = 0.5f, float radius = 0.5f)
     {
-    GameObject res = new GameObject();
+        GameObject res = new GameObject();
 
-    res.AddComponent<MeshRenderer>();
-    res.AddComponent<MeshCollider>();
+        res.AddComponent<MeshRenderer>();
+        MeshCollider mc = res.AddComponent<MeshCollider>();
+        mc.convex = true;
 
-    Vector3[] vertices = new Vector3[(longitudeBands + 1) * (latitudeBands + 1)];
-    int[] triangles = new int[longitudeBands * latitudeBands * 6];
-    Vector3[] normals = new Vector3[vertices.Length];
+        Vector3[] vertices = new Vector3[(longitudeBands + 1) * (latitudeBands + 1)];
+        int[] triangles = new int[longitudeBands * latitudeBands * 6];
+        Vector3[] normals = new Vector3[vertices.Length];
 
-    int index = 0;
-    for (int lat = 0; lat <= latitudeBands; lat++)
-    {
-        float φ = lat * Mathf.PI / latitudeBands;
-
-        for (int lon = 0; lon <= longitudeBands; lon++)
+        int index = 0;
+        for (int lat = 0; lat <= latitudeBands; lat++)
         {
-            float θ = lon * 2 * Mathf.PI / longitudeBands;
+            float φ = lat * Mathf.PI / latitudeBands;
 
-            float x = (R + r * Mathf.Cos(φ)) * Mathf.Cos(θ);
-            float y = (R + r * Mathf.Cos(φ)) * Mathf.Sin(θ);
-            float z = r * Mathf.Sin(φ);
+            for (int lon = 0; lon <= longitudeBands; lon++)
+            {
+                float θ = lon * 2 * Mathf.PI / longitudeBands;
 
-            vertices[index] = new Vector3(x, y, z);
+                float x = (R + r * Mathf.Cos(φ)) * Mathf.Cos(θ);
+                float y = (R + r * Mathf.Cos(φ)) * Mathf.Sin(θ);
+                float z = r * Mathf.Sin(φ);
 
-            index++;
+                vertices[index] = new Vector3(x, y, z);
+
+                index++;
+            }
         }
-    }
 
-    index = 0;
-    for (int lat = 0; lat < latitudeBands; lat++)
-    {
-        for (int lon = 0; lon < longitudeBands; lon++)
+        index = 0;
+        for (int lat = 0; lat < latitudeBands; lat++)
         {
-            int first = (lat * (longitudeBands + 1)) + lon;
-            int second = first + longitudeBands + 1;
+            for (int lon = 0; lon < longitudeBands; lon++)
+            {
+                int first = (lat * (longitudeBands + 1)) + lon;
+                int second = first + longitudeBands + 1;
 
-            triangles[index++] = first + 1;
-            triangles[index++] = second;
-            triangles[index++] = first;
+                triangles[index++] = first + 1;
+                triangles[index++] = second;
+                triangles[index++] = first;
 
-            triangles[index++] = first + 1;
-            triangles[index++] = second + 1;
-            triangles[index++] = second;
+                triangles[index++] = first + 1;
+                triangles[index++] = second + 1;
+                triangles[index++] = second;
+            }
         }
-    }
 
-    for (int i = 0; i < triangles.Length; i += 3)
-    {
-        int i1 = triangles[i];
-        int i2 = triangles[i + 1];
-        int i3 = triangles[i + 2];
+        for (int i = 0; i < triangles.Length; i += 3)
+        {
+            int i1 = triangles[i];
+            int i2 = triangles[i + 1];
+            int i3 = triangles[i + 2];
 
-        Vector3 v1 = vertices[i1];
-        Vector3 v2 = vertices[i2];
-        Vector3 v3 = vertices[i3];
+            Vector3 v1 = vertices[i1];
+            Vector3 v2 = vertices[i2];
+            Vector3 v3 = vertices[i3];
 
-        Vector3 normal = Vector3.Normalize(Vector3.Cross(v2 - v1, v3 - v1));
+            Vector3 normal = Vector3.Normalize(Vector3.Cross(v2 - v1, v3 - v1));
 
-        normals[i1] = normal;
-        normals[i2] = normal;
-        normals[i3] = normal;
-    }
+            normals[i1] = normal;
+            normals[i2] = normal;
+            normals[i3] = normal;
+        }
 
-    Mesh mesh = new Mesh();
-    mesh.vertices = vertices;
-    mesh.triangles = triangles;
-    mesh.normals = normals;
+        Mesh mesh = new Mesh();
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.normals = normals;
 
-    MeshFilter meshFilter = res.AddComponent<MeshFilter>();
-    meshFilter.mesh = mesh;
+        MeshFilter meshFilter = res.AddComponent<MeshFilter>();
+        meshFilter.mesh = mesh;
 
-    mesh.RecalculateNormals();
-    mesh.RecalculateBounds();
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
 
-    res.GetComponent<Renderer>().material =Resources.Load("Materials/Standard", typeof(Material)) as Material; ;
+        mc.sharedMesh = mesh;
+        res.GetComponent<Renderer>().material = Resources.Load("Materials/Standard", typeof(Material)) as Material; ;
 
         return res;
     }
@@ -231,7 +236,8 @@ public class PrimitiveMesh : MonoBehaviour
         GameObject res = new GameObject();
 
         res.AddComponent<MeshRenderer>();
-        res.AddComponent<SphereCollider>();
+        MeshCollider mc = res.AddComponent<MeshCollider>();
+        mc.convex = true;
 
         Vector3[] vertices = new Vector3[(longitudeBands + 1) * (latitudeBands + 1)];
         int[] triangles = new int[longitudeBands * latitudeBands * 6];
@@ -306,6 +312,7 @@ public class PrimitiveMesh : MonoBehaviour
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
 
+        mc.sharedMesh = mesh;
         res.GetComponent<Renderer>().material = Resources.Load("Materials/Standard", typeof(Material)) as Material; ;
 
         return res;
@@ -316,7 +323,8 @@ public class PrimitiveMesh : MonoBehaviour
         GameObject res = new GameObject();
 
         res.AddComponent<MeshRenderer>();
-        CapsuleCollider collider = res.AddComponent<CapsuleCollider>();
+        MeshCollider mc = res.AddComponent<MeshCollider>();
+        mc.convex = true;
 
         Vector3[] vertices = new Vector3[(segments + 1) * 2 + 2];
         int[] triangles = new int[segments * 12];
@@ -335,7 +343,7 @@ public class PrimitiveMesh : MonoBehaviour
         vertices[index++] = new Vector3(0f, height, 0f);
 
         // Reposition centre
-        for(int i=0; i< vertices.Length; i++)
+        for (int i = 0; i < vertices.Length; i++)
         {
             vertices[i] -= new Vector3(0, height / 2.0f, 0);
         }
@@ -390,6 +398,7 @@ public class PrimitiveMesh : MonoBehaviour
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
 
+        mc.sharedMesh = mesh;
         res.GetComponent<Renderer>().material = Resources.Load("Materials/Standard", typeof(Material)) as Material; ;
 
         return res;

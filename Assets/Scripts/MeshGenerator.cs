@@ -134,7 +134,6 @@ public class MeshGenerator : MonoBehaviour
                         startVertices = mesh.vertices;
                         System.Array.Resize(ref tmpVertices, mesh.vertices.Length);
 
-
                         PinchStart = rightPinchPos;
 
                         tmpGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -165,7 +164,14 @@ public class MeshGenerator : MonoBehaviour
                                 }
                                 tmpVertices[i] = m_transform.InverseTransformPoint(V);
                             }
-                            go.GetComponent<MeshFilter>().mesh.vertices = tmpVertices;
+
+                            Mesh mesh = go.GetComponent<MeshFilter>().mesh;
+                            mesh.vertices = tmpVertices;
+                            mesh.RecalculateNormals();
+                            mesh.RecalculateBounds();
+                            MeshCollider meshCollider = go.GetComponent<MeshCollider>();
+                            meshCollider.sharedMesh = mesh;
+                            go.GetComponent<MeshFilter>().mesh = mesh;
                         }
                     }
 
@@ -237,7 +243,13 @@ public class MeshGenerator : MonoBehaviour
                             }
                         }
 
-                        go.GetComponent<MeshFilter>().mesh.vertices = resVertices;
+                        mesh.vertices = resVertices;
+                        mesh.RecalculateNormals();
+                        mesh.RecalculateBounds();
+                        MeshCollider meshCollider = go.GetComponent<MeshCollider>();
+                        meshCollider.sharedMesh = mesh;
+                        go.GetComponent<MeshFilter>().mesh = mesh;
+
                         tmpGo.GetComponent<Renderer>().material = Resources.Load("Materials/TransparentMat", typeof(Material)) as Material;
                     }
                 }
